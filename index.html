@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <title>Nova Loan AI</title>
+    <style>
+        .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .glow:hover { box-shadow: 0 0 20px rgba(59, 130, 246, 0.5); }
+    </style>
+</head>
+<body class="bg-[#0a0f1e] text-slate-200 min-h-screen flex items-center justify-center font-sans">
+
+    <div class="glass p-10 rounded-3xl shadow-2xl w-full max-w-md mx-4 transition-all duration-500">
+        <div class="text-center mb-8">
+            <div class="bg-blue-500 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-500/30">
+                <i class="fas fa-microchip text-3xl text-white"></i>
+            </div>
+            <h1 class="text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400">Nova Loan AI</h1>
+            <p class="text-slate-400 text-sm mt-2">Instant credit risk assessment</p>
+        </div>
+
+        <div class="space-y-4">
+            <div>
+                <label class="text-xs font-semibold text-slate-500 uppercase ml-1">Monthly Income ($)</label>
+                <input id="income" type="number" class="w-full bg-slate-800/50 border border-slate-700 p-4 rounded-xl outline-none focus:border-blue-500 transition-all">
+            </div>
+            <div>
+                <label class="text-xs font-semibold text-slate-500 uppercase ml-1">Loan Requested ($)</label>
+                <input id="loan" type="number" class="w-full bg-slate-800/50 border border-slate-700 p-4 rounded-xl outline-none focus:border-blue-500 transition-all">
+            </div>
+            <div>
+                <label class="text-xs font-semibold text-slate-500 uppercase ml-1">Credit Score Quality</label>
+                <select id="credit" class="w-full bg-slate-800/50 border border-slate-700 p-4 rounded-xl outline-none focus:border-blue-500 transition-all appearance-none">
+                    <option value="1">Good (Clean History)</option>
+                    <option value="0">Poor (Late Payments)</option>
+                </select>
+            </div>
+
+            <button onclick="predictLoan()" class="w-full py-4 bg-gradient-to-r from-blue-600 to-blue-500 rounded-xl font-bold text-white shadow-lg glow transition-all active:scale-95 mt-4">
+                Analyze Application
+            </button>
+        </div>
+
+        <div id="resultContainer" class="hidden mt-8 p-4 rounded-xl text-center font-bold animate-pulse">
+            <p id="resultText"></p>
+        </div>
+    </div>
+
+    <script>
+        async function predictLoan() {
+            const resBox = document.getElementById('resultContainer');
+            const resText = document.getElementById('resultText');
+            
+            // Animation reset
+            resBox.classList.add('hidden');
+            
+            const data = {
+                income: document.getElementById('income').value,
+                loan: document.getElementById('loan').value,
+                credit: document.getElementById('credit').value
+            };
+
+            try {
+                const response = await fetch('http://127.0.0.1:5000/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const json = await response.json();
+                
+                resBox.classList.remove('hidden');
+                if(json.status === "Approved") {
+                    resBox.className = "mt-8 p-4 rounded-xl text-center font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
+                    resText.innerHTML = "✅ LOAN APPROVED";
+                } else {
+                    resBox.className = "mt-8 p-4 rounded-xl text-center font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30";
+                    resText.innerHTML = "❌ APPLICATION REJECTED";
+                }
+            } catch (err) {
+                alert("Error connecting to AI Server. Is app.py running?");
+            }
+        }
+    </script>
+</body>
+</html>
